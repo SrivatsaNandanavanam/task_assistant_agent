@@ -1,0 +1,24 @@
+[project]
+name = "agentic-task-manager"
+version = "0.1.0"
+description = "Single-agent, tool-driven task manager (FastAPI + LangGraph)"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.141.1",
+    "langchain>=1.4.2",
+    "langchain-anthropic>=1.7.2",
+    "langgraph>=1.2.11",
+    "pydantic>=2.13.5",
+    "pydantic-settings>=2.15.0",
+    "python-dotenv>=1.2.3",
+    "sqlalchemy>=2.0.54",
+    "tzdata>=2026.4",
+    "uvicorn[standard]>=0.53.0",
+]
+
+[dependency-groups]
+dev = ["httpx>=0.28.1", "pytest>=9.1.1"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
