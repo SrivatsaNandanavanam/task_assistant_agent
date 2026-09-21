@@ -8,6 +8,7 @@ dependencies = [
     "langchain>=1.4.2",
     "langchain-anthropic>=1.7.2",
     "langgraph>=1.2.11",
+    "pg8000>=1.31.5",
     "pydantic>=2.13.5",
     "pydantic-settings>=2.15.0",
     "python-dotenv>=1.2.3",

@@ -7,20 +7,35 @@ import { MessageBubble } from "./MessageBubble";
 const SUGGESTIONS = ["Show my open tasks", "Create a task to review the report tomorrow at 5 PM", "Find tasks about API"];
 
 export function ChatPanel() {
-  const { messages, pending, busy, send, resolveApproval } = useAgent();
+  const { messages, pending, busy, history, send, resolveApproval } = useAgent();
   const endRef = useRef<HTMLDivElement>(null);
 
+  // Jump straight to the newest message once when saved history first appears (a long smooth scroll
+  // through a restored conversation is jarring); animate only for messages that arrive afterwards.
+  const restored = useRef(false);
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages, busy]);
+    const jump = history !== "loading" && !restored.current;
+    if (history !== "loading") restored.current = true;
+    endRef.current?.scrollIntoView({ behavior: jump ? "auto" : "smooth", block: "end" });
+  }, [messages, busy, history]);
 
   return (
     <section aria-label="Assistant" className="flex h-full min-h-0 flex-col bg-slate-50">
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4" aria-live="polite">
+        {history === "loading" && (
+          <div className="px-1 text-xs text-slate-400" role="status">
+            Loading conversation…
+          </div>
+        )}
+        {history === "failed" && (
+          <div className="px-1 text-xs text-slate-400" role="status">
+            Earlier messages couldn't be loaded.
+          </div>
+        )}
         {messages.map((m) => (
           <MessageBubble key={m.id} message={m} />
         ))}
-        {messages.length === 1 && (
+        {messages.length === 1 && history !== "loading" && (
           <div className="flex flex-wrap gap-2">
             {SUGGESTIONS.map((s) => (
               <button
@@ -42,7 +57,7 @@ export function ChatPanel() {
         )}
         <div ref={endRef} />
       </div>
-      <ChatComposer disabled={busy || !!pending} onSend={send} />
+      <ChatComposer disabled={busy || !!pending || history === "loading"} onSend={send} />
       {pending && (
         <DeleteConfirmationDialog
           task={pending.task}

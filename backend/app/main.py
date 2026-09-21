@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import agent, tasks
+from app.api import agent, conversations, tasks
 from app.core.config import env_file_found, get_settings
 from app.core.logging import log_event, setup_logging
 from app.db.session import init_db
@@ -41,6 +41,7 @@ def create_app() -> FastAPI:
 
     app.include_router(tasks.router)
     app.include_router(agent.router)
+    app.include_router(conversations.router)
     return app
 
 

@@ -48,6 +48,16 @@ export interface AgentResponse {
   last_task_id: number | null;
 }
 
+/** A saved chat message as returned by GET /api/conversations/{thread_id}/messages. */
+export interface StoredMessage {
+  id: number;
+  role: "user" | "assistant";
+  content: string;
+  status: AgentResponse["status"] | null;
+  steps: ReceiptStep[] | null;
+  created_at: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: "user" | "assistant";

@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from sqlalchemy import DateTime, create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.pool import NullPool, StaticPool
 from sqlalchemy.types import TypeDecorator
 
 from app.core.config import get_settings
@@ -34,12 +34,25 @@ class UTCDateTime(TypeDecorator):
 
 def make_engine(url: str | None = None) -> Engine:
     url = url or get_settings().database_url
-    if url.startswith("sqlite") and (":memory:" in url or url == "sqlite://"):
-        return create_engine(url, connect_args={"check_same_thread": False}, poolclass=StaticPool)
-    if url.startswith("sqlite"):
-        return create_engine(url, connect_args={"check_same_thread": False})
-    return create_engine(url)
 
+    if url.startswith("sqlite") and (":memory:" in url or url == "sqlite://"):
+        return create_engine(
+            url,
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool,
+        )
+
+    if url.startswith("sqlite"):
+        return create_engine(
+            url,
+            connect_args={"check_same_thread": False},
+        )
+
+    return create_engine(
+        url,
+        poolclass=NullPool,
+        pool_pre_ping=True,
+    )
 
 _engine: Engine | None = None
 _factory: sessionmaker[Session] | None = None
@@ -48,7 +61,7 @@ _factory: sessionmaker[Session] | None = None
 def init_db(url: str | None = None) -> sessionmaker[Session]:
     """Create the engine/tables and return the session factory (also stored globally)."""
     global _engine, _factory
-    from app.models import task  # noqa: F401  (register models)
+    from app.models import conversation, task  # noqa: F401  (register models)
 
     _engine = make_engine(url)
     Base.metadata.create_all(_engine)

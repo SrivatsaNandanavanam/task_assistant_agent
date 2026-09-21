@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     max_title_length: int = 200
     max_description_length: int = 2000
     max_list_limit: int = 100
+    max_stored_reply_length: int = 8000  # assistant replies are clipped to this when stored
+    max_conversation_page: int = 200  # most messages returned/loaded per request
+    context_message_limit: int = 6  # saved messages given to the model as conversation context
+    context_entry_max_chars: int = 500  # each context entry is clipped to this many characters
 
 
 @lru_cache

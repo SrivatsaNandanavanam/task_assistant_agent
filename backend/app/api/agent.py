@@ -6,6 +6,7 @@ from app.agent.graph import build_graph
 from app.agent.runner import AgentRunner, NoPendingApproval
 from app.core.config import get_settings
 from app.core.logging import log_event, log_failure
+from app.db.session import get_session_factory
 from app.schemas.agent import AgentResponse, MessageRequest, ResumeRequest
 
 router = APIRouter(prefix="/api/agent", tags=["agent"])
@@ -15,7 +16,10 @@ logger = logging.getLogger("api.agent")
 def get_runner(request: Request) -> AgentRunner:
     runner = getattr(request.app.state, "agent_runner", None)
     if runner is None:
-        runner = request.app.state.agent_runner = AgentRunner(build_graph())
+        runner = request.app.state.agent_runner = AgentRunner(
+            build_graph(),
+            conversation_session_factory=lambda: get_session_factory()(),  # same database as the tasks
+        )
     return runner
 
 

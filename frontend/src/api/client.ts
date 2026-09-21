@@ -1,4 +1,4 @@
-import type { AgentResponse, Task, TaskFilters, TaskMetrics } from "../types";
+import type { AgentResponse, StoredMessage, Task, TaskFilters, TaskMetrics } from "../types";
 
 export class ApiError extends Error {
   constructor(
@@ -59,6 +59,8 @@ export const api = {
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       }),
     }),
+  getMessages: (thread_id: string, signal?: AbortSignal) =>
+    request<StoredMessage[]>(`/api/conversations/${encodeURIComponent(thread_id)}/messages?limit=50`, { signal }),
   resume: (thread_id: string, approved: boolean) =>
     request<AgentResponse>("/api/agent/resume", {
       method: "POST",
