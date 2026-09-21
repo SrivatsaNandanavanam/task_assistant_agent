@@ -108,6 +108,16 @@ npm install
 npm run dev          # http://localhost:5173 (proxies /api to :8000)
 ```
 
+### Deploying the frontend and backend separately (e.g. two Vercel projects)
+
+The frontend calls relative `/api/...` URLs. Locally the Vite dev server proxies them to the backend, so nothing needs configuring. When the frontend is hosted on a different domain from the backend, set this **build-time** variable on the frontend project, then redeploy:
+
+| Variable | Example | Notes |
+| --- | --- | --- |
+| `VITE_API_BASE_URL` | `https://your-backend.vercel.app` | The backend **origin only**: no trailing slash and no `/api` (a trailing `/` or `/api` and a missing `https://` are tolerated). Leave empty for local development. |
+
+Vite bakes `VITE_*` values into the JavaScript when it builds, so changing the variable requires a **new build/redeploy**; it has no effect on an already-deployed bundle. On the **backend** project, `CORS_ORIGINS` must list the frontend's exact origin (comma-separated for several), e.g. `https://your-frontend.vercel.app`; preview URLs are different origins and must be listed too if you use them. To check a deployment, open DevTools -> Network -> Fetch/XHR: requests should go to `https://your-backend.vercel.app/api/...` (not the frontend's own domain) and return 200.
+
 On an empty database the workspace offers **Load demo data** (8 tasks, including two "API" tasks and a "Fix production deployment" task). It never overwrites existing tasks.
 
 ## Example prompts
@@ -182,7 +192,7 @@ cd backend
 uv run pytest
 ```
 
-159 backend tests (plus 21 frontend tests, `npm test` in `frontend/`): service/repository behaviour, agent routing per intent, API flows, and the mandatory guardrail suite (delete without approval, cancelled delete, unsupported intent, ambiguous target, bulk delete/complete, stored prompt-injection text, invalid structured output, DB failure without fake success, SQL-like input, changed-during-approval).
+159 backend tests (plus 39 frontend tests, `npm test` in `frontend/`): service/repository behaviour, agent routing per intent, API flows, and the mandatory guardrail suite (delete without approval, cancelled delete, unsupported intent, ambiguous target, bulk delete/complete, stored prompt-injection text, invalid structured output, DB failure without fake success, SQL-like input, changed-during-approval).
 
 The agent tests replace the model with a scripted planner returning `ActionPlan` objects, so they exercise everything except the model call itself.
 

@@ -9,10 +9,29 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Normalises VITE_API_BASE_URL into a bare origin such as "https://backend.example.com".
+ * Empty (the default) means "same origin": in local development the Vite dev server proxies /api to the
+ * backend. Forgiving of the common slips: surrounding spaces, a trailing "/", a trailing "/api" (paths
+ * below already start with /api) and a missing "https://" (a scheme-less value would be treated by the
+ * browser as a path relative to the frontend's own domain).
+ */
+export function normalizeApiBase(raw: string | undefined): string {
+  let base = (raw ?? "").trim();
+  if (!base) return "";
+  if (!/^https?:\/\//i.test(base)) base = `https://${base}`;
+  return base.replace(/\/+$/, "").replace(/\/api$/i, "");
+}
+
+/** Full URL for an API path (paths start with /api). Set at build time: this reads a Vite env variable. */
+export function apiUrl(path: string, base: string | undefined = import.meta.env.VITE_API_BASE_URL): string {
+  return `${normalizeApiBase(base)}${path}`;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
   try {
-    res = await fetch(path, {
+    res = await fetch(apiUrl(path), {
       ...init,
       headers: { "Content-Type": "application/json", ...init?.headers },
     });
